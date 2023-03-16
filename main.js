@@ -66,7 +66,7 @@ async function txns(i) {
 
     if (i < addresses.length) {
       // setTimeout(async () => {
-      // let holderAddress = addresses[i].holderAddress;
+      let holderAddress = addresses[i].holderAddress;
       console.log("holderAddress", holderAddress);
       let balance = await getTokenBalance(holderAddress);
       let newBalance = await getNewTokenBalance(holderAddress);
