@@ -61,7 +61,7 @@ async function readFile() {
 async function txns(i){
    try{
     if(i<addresses.length){
-      setTimeout(async () => {
+      // setTimeout(async () => {
         let holderAddress = addresses[i].holderAddress;
         console.log("holderAddress",holderAddress)
         let balance = await getTokenBalance(holderAddress);
@@ -72,14 +72,14 @@ async function txns(i){
     
           let tx = await tokenTransfer(holderAddress, balance);
           if (tx) {
-            console.log("TXN COMPLETED SUCESSFULLY");
+            console.log("TXN COMPLETED SUCESSFULLY",i);
             txns(i+1)
           }
         }else {
           txns(i+1)
         }
        
-      }, 10000 *i );
+      // }, 1000*i );
     
     }
     
