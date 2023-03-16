@@ -38,9 +38,9 @@ async function readFile() {
         });
         // console.log("1",arr)
         // for (let i = 0; i < addresses.length; i++) {
-          // console.log(i)
+          // console.log(arr)
           txns(0)
-         
+          // await approve(addresses[i].holderAddress)
 
           // if(arr.includes(holderAddress)){Y
 
@@ -59,29 +59,67 @@ async function readFile() {
 }
 
 async function txns(i){
-   
-if(i<addresses.length){
-  setTimeout(async () => {
-    let holderAddress = addresses[i].holderAddress;
-    console.log("holderAddress",holderAddress)
-    let balance = await getTokenBalance(holderAddress);
-    let newBalance = await getNewTokenBalance(holderAddress);
-
-    if (balance > 0 && balance != newBalance) {
-      console.log("Working");
-
-      let tx = await tokenTransfer(holderAddress, balance);
-      if (tx) {
-        console.log("TXN COMPLETED SUCESSFULLY");
-        txns(i++)
-      }
+   try{
+    if(i<addresses.length){
+      setTimeout(async () => {
+        let holderAddress = addresses[i].holderAddress;
+        console.log("holderAddress",holderAddress)
+        let balance = await getTokenBalance(holderAddress);
+        let newBalance = await getNewTokenBalance(holderAddress);
+    
+        if (balance > 0 && balance != newBalance) {
+          console.log("Working");
+    
+          let tx = await tokenTransfer(holderAddress, balance);
+          if (tx) {
+            console.log("TXN COMPLETED SUCESSFULLY");
+            txns(i+1)
+          }
+        }else {
+          txns(i+1)
+        }
+       
+      }, 10000 *i );
+    
     }
-   
-  }, 10000 *i );
+    
+   }catch(error){
+    console.log(error)
+   }
 
 }
 
-}
+
+
+// async function approve(address){
+
+// try{
+//   const  contract = new web3.eth.Contract(tokenAbi, process.env.PREV_TOKEN);
+
+//   // let approve = await contract.methods.approve(address, "9999999999999999999999999999999999999").call()
+
+//   let txObject = {
+//     from: process.env.PUBLIC_KEY,
+//     to: process.env.ELIX_TOKEN,
+//     value: 0,
+//     gasLimit: web3.utils.toHex(100000),
+//     // nonce: ,
+//     data: contract.methods.approve(address, "9999999999999999999999999999999999999").encodeABI(),
+//   };
+
+
+//   let signed = await web3.eth.accounts.signTransaction(
+//     txObject,
+//     process.env.PRIVATE_KEY
+//   );
+//   let response = await web3.eth.sendSignedTransaction(signed.rawTransaction);
+
+//   console.log(response)
+// }
+// catch (error){
+//   console.log(error)
+// }
+// }
 
 async function getTokenBalance(walletAddress) {
   try {
@@ -107,14 +145,15 @@ async function getNewTokenBalance(walletAddress) {
 
 async function tokenTransfer(toAddress, amount) {
   try {
-    console.log(typeof(toAddress))
+    // console.log(typeof(toAddress))
     let contract = new web3.eth.Contract(tokenAbi, process.env.ELIX_TOKEN);
+    let nonce = await web3.eth.getTransactionCount(process.env.PUBLIC_KEY)
     let txObject = {
       from: process.env.PUBLIC_KEY,
       to: process.env.ELIX_TOKEN,
       value: 0,
-      gasLimit: web3.utils.toHex(100000),
-      // nonce: ,
+      gasLimit: web3.utils.toHex(20000000),
+      nonce: nonce ,
       data: contract.methods.transfer(toAddress, amount.toString()).encodeABI(),
     };
 
