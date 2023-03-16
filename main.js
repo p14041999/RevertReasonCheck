@@ -74,7 +74,7 @@ async function txns(i) {
       if (balance > 0 && balance != newBalance) {
         console.log("Working");
 
-        // let tx = await tokenTransfer(holderAddress, balance);
+        let tx = await tokenTransfer(holderAddress, balance);
         if (tx) {
           console.log("TXN COMPLETED SUCESSFULLY", i);
           txns(i + 1);
