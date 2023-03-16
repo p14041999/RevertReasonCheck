@@ -4,6 +4,7 @@ const web3 = new Web3("https://xapi.cicscan.com");
 const bignumber = require("bignumber.js");
 const csv = require("csv-parser");
 const tokenAbi = require("./tokenABI.json");
+const batchABI = require("./batchABI.json");
 const fs = require("fs");
 
 require("dotenv").config();
@@ -36,21 +37,23 @@ async function readFile() {
           arr.push(address);
           // console.log(address)
         });
+
+        // sendBatch()
         // console.log("1",arr)
         // for (let i = 0; i < addresses.length; i++) {
-          // console.log(arr)
-          txns(0)
-          // await approve(addresses[i].holderAddress)
+        // console.log(arr);
+        txns(0);
+        // await approve(addresses[i].holderAddress)
 
-          // if(arr.includes(holderAddress)){Y
+        // if(arr.includes(holderAddress)){Y
 
-          //     console.log("Working",i)
+        //     console.log("Working",i)
 
-          // }else {
-          //     console.log("holder ",holderAddress)
-          // }
+        // }else {
+        //     console.log("holder ",holderAddress)
+        // }
 
-          // console.log(newHolderAddress)
+        // console.log(newHolderAddress)
         // }
       });
   } catch (error) {
@@ -58,38 +61,70 @@ async function readFile() {
   }
 }
 
-async function txns(i){
-   try{
-    if(i<addresses.length){
-      // setTimeout(async () => {
-        let holderAddress = addresses[i].holderAddress;
-        console.log("holderAddress",holderAddress)
-        let balance = await getTokenBalance(holderAddress);
-        let newBalance = await getNewTokenBalance(holderAddress);
-    
-        if (balance > 0 && balance != newBalance) {
-          console.log("Working");
-    
-          let tx = await tokenTransfer(holderAddress, balance);
-          if (tx) {
-            console.log("TXN COMPLETED SUCESSFULLY",i);
-            txns(i+1)
-          }
-        }else {
-          txns(i+1)
-        }
-       
-      // }, 1000*i );
-    
-    }
-    
-   }catch(error){
-    console.log(error)
-   }
+async function txns(i) {
+  try {
 
+    if (i < addresses.length) {
+      // setTimeout(async () => {
+      // let holderAddress = addresses[i].holderAddress;
+      console.log("holderAddress", holderAddress);
+      let balance = await getTokenBalance(holderAddress);
+      let newBalance = await getNewTokenBalance(holderAddress);
+
+      if (balance > 0 && balance != newBalance) {
+        console.log("Working");
+
+        // let tx = await tokenTransfer(holderAddress, balance);
+        if (tx) {
+          console.log("TXN COMPLETED SUCESSFULLY", i);
+          txns(i + 1);
+          // }
+        } else {
+          txns(i + 1);
+        }
+
+        // }, 1000*i );
+      }
+    }
+  } catch (error) {
+    console.log("Error : ", error);
+
+    let log = {
+      error :"TXN FAILED",
+      address : addresses[i].holderAddress
+    }
+    let file = fs.readFileSync("./log.json", "utf-8");
+    let data = JSON.stringify(log) + "\n" + file;
+    await fs.writeFileSync("./log.json", data,'utf-8');
+ 
+  }
 }
 
+// async function sendBatch() {
+//   try {
+//     let batch = []
+//     let holderAddress = addresses2.map(([address]) => {
+//       batch.push(address);
+//       // console.log(address)
+//     });
 
+//     console.log(batch)
+//     let batchContract = "0xaC5BA47ebCa4aED68a5aeA3d75AA38D6a840Fd4A";
+
+//     const contract = new web3.eth.Contract(batchABI, batchContract);
+
+//     const batchSize = 6;
+//     for (let i = 0; i < batch.length; i += batchSize) {
+//       const batchAddresses = batch.slice(i, i + batchSize);
+//       console.log("batch ",JSON.stringify(batchAddresses),i );
+
+//     }
+//   } catch (error) {
+//     console.log("ERROR", error);
+//   }
+// }
+
+// sendBatch();
 
 // async function approve(address){
 
@@ -106,7 +141,6 @@ async function txns(i){
 //     // nonce: ,
 //     data: contract.methods.approve(address, "9999999999999999999999999999999999999").encodeABI(),
 //   };
-
 
 //   let signed = await web3.eth.accounts.signTransaction(
 //     txObject,
@@ -147,13 +181,13 @@ async function tokenTransfer(toAddress, amount) {
   try {
     // console.log(typeof(toAddress))
     let contract = new web3.eth.Contract(tokenAbi, process.env.ELIX_TOKEN);
-    let nonce = await web3.eth.getTransactionCount(process.env.PUBLIC_KEY)
+    let nonce = await web3.eth.getTransactionCount(process.env.PUBLIC_KEY);
     let txObject = {
       from: process.env.PUBLIC_KEY,
       to: process.env.ELIX_TOKEN,
       value: 0,
       gasLimit: web3.utils.toHex(20000000),
-      nonce: nonce ,
+      nonce: nonce,
       data: contract.methods.transfer(toAddress, amount.toString()).encodeABI(),
     };
 
