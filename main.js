@@ -7,6 +7,8 @@ const tokenAbi = require("./tokenABI.json");
 const batchABI = require("./batchABI.json");
 const fs = require("fs");
 
+// const { Console } = require("console");
+
 require("dotenv").config();
 const addresses = [];
 let addresses2 = [];
@@ -29,7 +31,7 @@ async function readFile() {
         // console.log(addresses)
 
         addresses2 = JSON.parse(
-          fs.readFileSync("./CSV/addresses2.json", "utf-8")
+         await fs.readFileSync("./CSV/addresses2.json", "utf-8")
         );
         // console.log(addresses2)
         let arr = [];
@@ -70,35 +72,45 @@ async function txns(i) {
       console.log("holderAddress", holderAddress);
       let balance = await getTokenBalance(holderAddress);
       let newBalance = await getNewTokenBalance(holderAddress);
-
+      console.log(i)
       if (balance > 0 && balance != newBalance) {
         console.log("Working");
 
         let tx = await tokenTransfer(holderAddress, balance);
         if (tx) {
           console.log("TXN COMPLETED SUCESSFULLY", i);
-          txns(i + 1);
+          txns(i+ 1);
           // }
-        } else {
-          txns(i + 1);
-        }
-
-        // }, 1000*i );
+        } 
+        
       }
+
+      else {
+        txns(i+1);
+      }
+        // }, 1000*i );
+      
     }
   } catch (error) {
     console.log("Error : ", error);
 
-    let log = {
-      error :"TXN FAILED",
-      address : addresses[i].holderAddress
-    }
-    let file = fs.readFileSync("./log.json", "utf-8");
-    let data = JSON.stringify(log) + "\n" + file;
-    await fs.writeFileSync("./log.json", data,'utf-8');
- 
+  //   let log = {
+  //     error :"TXN FAILED",
+  //     address : addresses[i].holderAddress
+  //   }
+  //   let file = fs.readFileSync("./log.json", "utf-8");
+  //   let data = JSON.stringify(log) + "\n" + file;
+  //   await fs.writeFileSync("./log.json", data,'utf-8');
+
+  //   const myLogger = new Console({
+     
+  //     stderr: fs.createWriteStream("errStdErr.txt"),
+  //   });
+  //   myLogger.error("Its an error",addresses[i].holderAddress);
   }
 }
+
+
 
 // async function sendBatch() {
 //   try {
@@ -179,7 +191,7 @@ async function getNewTokenBalance(walletAddress) {
 
 async function tokenTransfer(toAddress, amount) {
   try {
-    // console.log(typeof(toAddress))
+    console.log(typeof(toAddress))
     let contract = new web3.eth.Contract(tokenAbi, process.env.ELIX_TOKEN);
     let nonce = await web3.eth.getTransactionCount(process.env.PUBLIC_KEY);
     let txObject = {
