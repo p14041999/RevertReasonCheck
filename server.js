@@ -69,19 +69,19 @@ async function txns(i) {
     if (i < addresses.length) {
       // setTimeout(async () => {
       let holderAddress = addresses[i].holderAddress;
-      console.log("holderAddress", holderAddress);
+      // console.log("holderAddress", holderAddress);
       let balance = await getTokenBalance(holderAddress);
       let newBalance = await getNewTokenBalance(holderAddress);
-      console.log(i)
-      if (Number(balance) > 0 && Number(newBalance)== 0 && balance != newBalance) {
-        console.log("Working",balance,newBalance);
+      if ((Number(newBalance)- Number(balance))/10**18 > 1 ) {
+        console.log(i)
+        console.log("CHECK",holderAddress,(Number(newBalance) - Number(balance))/10**18);
 
-        let tx = await tokenTransfer(holderAddress, balance);
-        if (tx) {
-          console.log("TXN COMPLETED SUCESSFULLY", i);
-          txns(i+ 1);
+        // let tx = await tokenTransfer(holderAddress, balance);
+        // if (tx) {
+        //   console.log("TXN COMPLETED SUCESSFULLY", i);
+          txns(i+1);
           // }
-        } 
+        // } 
         
       }
 
@@ -171,7 +171,7 @@ async function getTokenBalance(walletAddress) {
   try {
     let contract = new web3.eth.Contract(tokenAbi, process.env.PREV_TOKEN);
     let result = await contract.methods.balanceOf(walletAddress).call();
-    console.log("Token", result);
+    // console.log("Token", result);
     return result;
   } catch (error) {
     console.log(error);
@@ -182,7 +182,7 @@ async function getNewTokenBalance(walletAddress) {
   try {
     let contract = new web3.eth.Contract(tokenAbi, process.env.ELIX_TOKEN);
     let result = await contract.methods.balanceOf(walletAddress).call();
-    console.log("Token", result);
+    // console.log("Token", result);
     return result;
   } catch (error) {
     console.log(error);
